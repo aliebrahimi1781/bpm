@@ -1,0 +1,58 @@
+<project name="Spring-WS Book demo" basedir=".." default="compile">
+
+    <property name="build.dir" value="${basedir}/build"/>
+    <property file="${build.dir}/build.properties"/>
+
+    <property name="jar-name" value="bpmprocess.jar"/>
+
+    <property name="library.dir" value="${basedir}/lib"/>
+    <property name="target.dir" value="${basedir}/target"/>
+    <property name="source.dir" value="${basedir}/src"/>
+    <property name="class.dir" value="${basedir}/classes"/>
+    <property name="output.dir" value="${basedir}/output1"/>
+    <property name="conf.dir" value="${basedir}/conf"/>
+
+    <path id="build.classpath">
+        <fileset dir="${library.dir}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="init">
+        <mkdir dir="${class.dir}"/>
+        <mkdir dir="${output.dir}"/>
+        <filter token="contextApp" value="${context.path}"/>
+
+        <condition property="contextRoot" value="${context.path}">
+            <not>
+                <equals arg1="" arg2="${context.path}"/>
+            </not>
+        </condition>
+        <condition property="contextRoot" value="/">
+            <equals arg1="" arg2="${context.path}"/>
+        </condition>
+
+        <filter token="contextRoot" value="${contextRoot}"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <javac debug="on" nowarn="on" deprecation="true" destdir="${class.dir}" includes="**/*.java"
+               srcdir="${source.dir}" source="1.6" target="1.6">
+            <classpath>
+                <path refid="build.classpath"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="clean" description="delete all compiled objects">
+        <delete dir="${class.dir}"/>
+        <delete dir="${output.dir}"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar jarfile="${output.dir}/${jar-name}" >
+            <fileset dir="${class.dir}" includes="**/*.class"/>
+        </jar>
+    </target>
+
+</project>

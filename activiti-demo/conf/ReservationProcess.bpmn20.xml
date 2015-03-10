@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="ReservationProcess" name="Reservation Process" isExecutable="true">
+    <startEvent id="resstartevent1" name="Start"></startEvent>
+    <serviceTask id="resmakeReservations" name="Make Reservations" activiti:class="com.learning.activiti.task.reservations.ReservationsTask"></serviceTask>
+    <parallelGateway id="resparallelgateway1" name="Parallel Gateway1"></parallelGateway>
+    <serviceTask id="resbookHotel" name="Book Hotel" activiti:class="com.learning.activiti.task.reservations.HotelTask"></serviceTask>
+    <serviceTask id="resbookFlight" name="Book Flight" activiti:class="com.learning.activiti.task.reservations.FlightTask"></serviceTask>
+    <serviceTask id="resbookCar" name="Book Car" activiti:class="com.learning.activiti.task.reservations.CarTask"></serviceTask>
+    <parallelGateway id="resparallelgateway2" name="Parallel Gateway2"></parallelGateway>
+    <serviceTask id="reschargeCreditCard" name="Charge Credit Card" activiti:class="com.learning.activiti.task.reservations.CreditCardTask"></serviceTask>
+    <exclusiveGateway id="resexclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
+    <serviceTask id="resmailtask1" name="Success Mail Task" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:expression>&lt;html&gt;
+       &lt;body&gt;
+                  Hello ${reservationDTO.customerName},&lt;br/&gt;&lt;br/&gt;
+
+                  Your reservation request details are shown below: &lt;br/&gt;&lt;br/&gt;
+
+                  &lt;hr&gt;
+                  Card Number: ${reservationDTO.cardNumber}  &lt;br/&gt;
+                  Address: ${reservationDTO.customerAddress} &lt;br/&gt;
+                  Flight Number: ${reservationDTO.flightNumber} &lt;br/&gt;
+                  Total Flight Charges: ${reservationDTO.totalPrice} &lt;br/&gt;
+                  Total Hotel Charges: ${reservationDTO.totalHotalRent} &lt;br/&gt;
+                  Total  Car Rent: ${reservationDTO.totalCarRent} &lt;br/&gt;
+                  Payment Status: ${reservationDTO.paymentStatus} &lt;br/&gt; &lt;br/&gt;
+
+
+                  Kind regards,&lt;br/&gt;
+                  The Admin Manager.
+       &lt;/body&gt;
+&lt;/html&gt;</activiti:expression>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Payment Success]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="resmailtask2" name="Failure Mail Task" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="html">
+          <activiti:expression>&lt;html&gt;
+       &lt;body&gt;
+                  Hello ${reservationDTO.customerName},&lt;br/&gt;&lt;br/&gt;
+
+                  Your reservation request details are shown below: &lt;br/&gt;&lt;br/&gt;
+
+                  &lt;hr&gt;
+                  Card Number: ${reservationDTO.cardNumber}   &lt;br/&gt;
+                  Address: ${reservationDTO.customerAddress}   &lt;br/&gt;
+                  Flight Number: ${reservationDTO.flightNumber} &lt;br/&gt;
+                  Total Flight Charges: ${reservationDTO.totalPrice} &lt;br/&gt;
+                  Total Hotel Charges: ${reservationDTO.totalHotalRent} &lt;br/&gt;
+                  Total Car Rent: ${reservationDTO.totalCarRent} &lt;br/&gt;
+                  Payment Status: ${reservationDTO.paymentStatus} &lt;br/&gt; &lt;br/&gt;
+
+
+                  Kind regards,&lt;br/&gt;
+                  The Admin Manager.
+       &lt;/body&gt;
+&lt;/html&gt;</activiti:expression>
+        </activiti:field>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Payment Failure]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <endEvent id="resendevent1" name="End"></endEvent>
+    <sequenceFlow id="resflow1" sourceRef="resstartevent1" targetRef="resmakeReservations"></sequenceFlow>
+    <sequenceFlow id="resflow2" sourceRef="resmakeReservations" targetRef="resparallelgateway1"></sequenceFlow>
+    <sequenceFlow id="resflow4" sourceRef="resparallelgateway1" targetRef="resbookCar"></sequenceFlow>
+    <sequenceFlow id="resflow5" sourceRef="resparallelgateway1" targetRef="resbookFlight"></sequenceFlow>
+    <sequenceFlow id="resflow7" sourceRef="resbookCar" targetRef="resparallelgateway2"></sequenceFlow>
+    <sequenceFlow id="resflow8" sourceRef="resbookFlight" targetRef="resparallelgateway2"></sequenceFlow>
+    <sequenceFlow id="resflow9" sourceRef="resparallelgateway2" targetRef="reschargeCreditCard"></sequenceFlow>
+    <sequenceFlow id="resflow10" sourceRef="reschargeCreditCard" targetRef="resexclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="resflow11" name="success" sourceRef="resexclusivegateway1" targetRef="resmailtask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${reservationDTO.paymentStatus == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="resflow12" name="failure" sourceRef="resexclusivegateway1" targetRef="resmailtask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${reservationDTO.paymentStatus == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="resflow13" sourceRef="resmailtask1" targetRef="resendevent1"></sequenceFlow>
+    <sequenceFlow id="resflow14" sourceRef="resmailtask2" targetRef="resendevent1"></sequenceFlow>
+    <sequenceFlow id="resflow3" sourceRef="resparallelgateway1" targetRef="resbookHotel"></sequenceFlow>
+    <sequenceFlow id="resflow6" sourceRef="resbookHotel" targetRef="resparallelgateway2"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_ReservationProcess">
+    <bpmndi:BPMNPlane bpmnElement="ReservationProcess" id="BPMNPlane_ReservationProcess">
+      <bpmndi:BPMNShape bpmnElement="resstartevent1" id="BPMNShape_resstartevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="250.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resmakeReservations" id="BPMNShape_resmakeReservations">
+        <omgdc:Bounds height="74.0" width="151.0" x="190.0" y="231.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resparallelgateway1" id="BPMNShape_resparallelgateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="440.0" y="247.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resbookHotel" id="BPMNShape_resbookHotel">
+        <omgdc:Bounds height="65.0" width="151.0" x="600.0" y="110.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resbookFlight" id="BPMNShape_resbookFlight">
+        <omgdc:Bounds height="55.0" width="151.0" x="600.0" y="240.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resbookCar" id="BPMNShape_resbookCar">
+        <omgdc:Bounds height="55.0" width="151.0" x="600.0" y="370.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resparallelgateway2" id="BPMNShape_resparallelgateway2">
+        <omgdc:Bounds height="40.0" width="40.0" x="870.0" y="247.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="reschargeCreditCard" id="BPMNShape_reschargeCreditCard">
+        <omgdc:Bounds height="74.0" width="137.0" x="1000.0" y="231.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resexclusivegateway1" id="BPMNShape_resexclusivegateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="1220.0" y="247.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resmailtask1" id="BPMNShape_resmailtask1">
+        <omgdc:Bounds height="55.0" width="149.0" x="1352.0" y="160.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resmailtask2" id="BPMNShape_resmailtask2">
+        <omgdc:Bounds height="55.0" width="141.0" x="1352.0" y="330.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="resendevent1" id="BPMNShape_resendevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1580.0" y="250.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="resflow1" id="BPMNEdge_resflow1">
+        <omgdi:waypoint x="95.0" y="267.0"></omgdi:waypoint>
+        <omgdi:waypoint x="190.0" y="268.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow2" id="BPMNEdge_resflow2">
+        <omgdi:waypoint x="341.0" y="268.0"></omgdi:waypoint>
+        <omgdi:waypoint x="440.0" y="267.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow4" id="BPMNEdge_resflow4">
+        <omgdi:waypoint x="460.0" y="287.0"></omgdi:waypoint>
+        <omgdi:waypoint x="460.0" y="397.0"></omgdi:waypoint>
+        <omgdi:waypoint x="600.0" y="397.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow5" id="BPMNEdge_resflow5">
+        <omgdi:waypoint x="480.0" y="267.0"></omgdi:waypoint>
+        <omgdi:waypoint x="600.0" y="267.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow7" id="BPMNEdge_resflow7">
+        <omgdi:waypoint x="751.0" y="397.0"></omgdi:waypoint>
+        <omgdi:waypoint x="890.0" y="397.0"></omgdi:waypoint>
+        <omgdi:waypoint x="890.0" y="287.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow8" id="BPMNEdge_resflow8">
+        <omgdi:waypoint x="751.0" y="267.0"></omgdi:waypoint>
+        <omgdi:waypoint x="870.0" y="267.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow9" id="BPMNEdge_resflow9">
+        <omgdi:waypoint x="910.0" y="267.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1000.0" y="268.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow10" id="BPMNEdge_resflow10">
+        <omgdi:waypoint x="1137.0" y="268.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1220.0" y="267.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow11" id="BPMNEdge_resflow11">
+        <omgdi:waypoint x="1240.0" y="247.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1240.0" y="187.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1352.0" y="187.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.0" width="57.0" x="1220.0" y="161.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow12" id="BPMNEdge_resflow12">
+        <omgdi:waypoint x="1240.0" y="287.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1240.0" y="357.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1352.0" y="357.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.0" width="42.0" x="1230.0" y="369.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow13" id="BPMNEdge_resflow13">
+        <omgdi:waypoint x="1501.0" y="187.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1597.0" y="187.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1597.0" y="250.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow14" id="BPMNEdge_resflow14">
+        <omgdi:waypoint x="1493.0" y="357.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1597.0" y="357.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1597.0" y="285.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow3" id="BPMNEdge_resflow3">
+        <omgdi:waypoint x="460.0" y="247.0"></omgdi:waypoint>
+        <omgdi:waypoint x="460.0" y="142.0"></omgdi:waypoint>
+        <omgdi:waypoint x="600.0" y="142.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="resflow6" id="BPMNEdge_resflow6">
+        <omgdi:waypoint x="751.0" y="142.0"></omgdi:waypoint>
+        <omgdi:waypoint x="890.0" y="142.0"></omgdi:waypoint>
+        <omgdi:waypoint x="890.0" y="247.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

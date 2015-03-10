@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/bpmn20">
+  <process id="LoanProcess" name="LoanProcess" isExecutable="true">
+    <startEvent id="startevent1" name="Start"></startEvent>
+    <scriptTask id="creditCheck" name="Check credit" scriptFormat="groovy" activiti:autoStoreVariables="false">
+      <script>out:println "Checking credit for " + name;
+creditCheckOk = false;
+if((income / 2) &gt; loanAmount) {
+creditCheckOk = true;
+}
+out:println "Checked credit for " + name + " outcome is " + creditCheckOk;
+</script>
+    </scriptTask>
+    <sequenceFlow id="flow2" sourceRef="startevent1" targetRef="creditCheck"></sequenceFlow>
+    <serviceTask id="createApplication" name="Create application" activiti:class="com.learning.activiti.task.CreateApplicationTask"></serviceTask>
+    <sequenceFlow id="flow3" sourceRef="creditCheck" targetRef="createApplication"></sequenceFlow>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <sequenceFlow id="flow4" sourceRef="createApplication" targetRef="evalLoanRequest"></sequenceFlow>
+    <serviceTask id="informCustomerTask" name="Inform customer of denial" activiti:class="com.learning.activiti.task.CustomerTask"></serviceTask>
+    <serviceTask id="processRequestTask" name="Process request" activiti:class="com.learning.activiti.task.ProcessRequestTask"></serviceTask>
+    <userTask id="evalLoanRequest" name="Evaluate loan request" activiti:assignee="fozzie">
+      <extensionElements>
+        <activiti:formProperty id="name" name="Name" type="string" expression="${loanApplication.customerName}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="emailAddress" name="Email Address" type="string" expression="${loanApplication.emailAddress}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="income" name="Income of customer" type="long" expression="${loanApplication.income}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="loanAmount" name="Loan Amount" type="long" expression="${loanApplication.loanAmount}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="creditCheckOk" name="Outcome of credit check" type="string" expression="${loanApplication.creditCheckOk}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="approvalStatus" name="Do you approve the request?" type="enum" required="true">
+          <activiti:value id="true" name="true"></activiti:value>
+          <activiti:value id="false" name="false"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="explanation" name="Explanation" type="string"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <boundaryEvent id="escalationTimer" name="Timer" attachedToRef="evalLoanRequest" cancelActivity="true">
+      <timerEventDefinition>
+        <timeDuration>PT1M</timeDuration>
+      </timerEventDefinition>
+    </boundaryEvent>
+    <userTask id="evalLoanRequestByManager" name="Evaluate Request By Manager" activiti:candidateGroups="management">
+      <extensionElements>
+        <activiti:formProperty id="customerName" name="Customer Name" type="string" expression="${loanApplication.customerName}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="emailAddress" name="Email Address" type="string" expression="${loanApplication.emailAddress}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="Income" name="Customer Income" type="long" expression="${loanApplication.income}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="loanAmount" name="Loan Amount" type="long" expression="${loanApplication.loanAmount}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="creditCheckOk" name="Outcome of credit check" type="string" expression="${loanApplication.creditCheckOk}" writable="false"></activiti:formProperty>
+        <activiti:formProperty id="approvalStatus" name="Do you approve the request?" type="enum">
+          <activiti:value id="true" name="true"></activiti:value>
+          <activiti:value id="false" name="false"></activiti:value>
+        </activiti:formProperty>
+        <activiti:formProperty id="explanation" name="Explanation" type="string"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow10" sourceRef="escalationTimer" targetRef="evalLoanRequestByManager"></sequenceFlow>
+    <serviceTask id="mailtask1" name="Mail Task" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Loan status update]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:expression>&lt;html&gt;
+       &lt;body&gt;
+                  Hello ${loanApplication.customerName},&lt;br/&gt;&lt;br/&gt;
+                  
+                  Your loan request has been approved/denied for the following reason: ${explanation} &lt;br/&gt;&lt;br/&gt;
+
+                  Customer loan data:
+                  &lt;hr&gt;
+                  Name: ${loanApplication.customerName}  &lt;br/&gt;
+                  Income: ${loanApplication.income} &lt;br/&gt;
+                  Loan Amount: ${loanApplication.loanAmount} &lt;br/&gt;
+                  Approval Status: ${approvalStatus} &lt;br/&gt;
+                  Reason for approval/deny: ${explanation} &lt;br/&gt;
+                  
+                  Kind regards,&lt;br/&gt;
+                  
+                  The Loan Company.
+       &lt;/body&gt;
+&lt;/html&gt;</activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="flow12" name="Send denial email" sourceRef="informCustomerTask" targetRef="mailtask1"></sequenceFlow>
+    <sequenceFlow id="flow13" name="Send approval email" sourceRef="processRequestTask" targetRef="mailtask1"></sequenceFlow>
+    <sequenceFlow id="flow14" sourceRef="mailtask1" targetRef="endevent1"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow15" sourceRef="evalLoanRequest" targetRef="exclusivegateway2"></sequenceFlow>
+    <sequenceFlow id="flow16" sourceRef="evalLoanRequestByManager" targetRef="exclusivegateway2"></sequenceFlow>
+    <sequenceFlow id="flow17" name="Deny" sourceRef="exclusivegateway2" targetRef="informCustomerTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approvalStatus == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow18" name="Approved" sourceRef="exclusivegateway2" targetRef="processRequestTask">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${approvalStatus == true}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_LoanProcess">
+    <bpmndi:BPMNPlane bpmnElement="LoanProcess" id="BPMNPlane_LoanProcess">
+      <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="90.0" y="305.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="creditCheck" id="BPMNShape_creditCheck">
+        <omgdc:Bounds height="65.0" width="105.0" x="210.0" y="290.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="createApplication" id="BPMNShape_createApplication">
+        <omgdc:Bounds height="71.0" width="131.0" x="410.0" y="284.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1520.0" y="305.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="informCustomerTask" id="BPMNShape_informCustomerTask">
+        <omgdc:Bounds height="81.0" width="161.0" x="1050.0" y="180.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="processRequestTask" id="BPMNShape_processRequestTask">
+        <omgdc:Bounds height="71.0" width="161.0" x="1040.0" y="380.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="evalLoanRequest" id="BPMNShape_evalLoanRequest">
+        <omgdc:Bounds height="81.0" width="141.0" x="620.0" y="280.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="escalationTimer" id="BPMNShape_escalationTimer">
+        <omgdc:Bounds height="30.0" width="30.0" x="670.0" y="270.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="evalLoanRequestByManager" id="BPMNShape_evalLoanRequestByManager">
+        <omgdc:Bounds height="72.0" width="141.0" x="614.0" y="100.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="mailtask1" id="BPMNShape_mailtask1">
+        <omgdc:Bounds height="55.0" width="121.0" x="1290.0" y="295.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
+        <omgdc:Bounds height="40.0" width="40.0" x="910.0" y="299.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="125.0" y="322.0"></omgdi:waypoint>
+        <omgdi:waypoint x="210.0" y="322.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="315.0" y="322.0"></omgdi:waypoint>
+        <omgdi:waypoint x="410.0" y="319.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="541.0" y="319.0"></omgdi:waypoint>
+        <omgdi:waypoint x="620.0" y="320.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow10" id="BPMNEdge_flow10">
+        <omgdi:waypoint x="685.0" y="270.0"></omgdi:waypoint>
+        <omgdi:waypoint x="684.0" y="172.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow12" id="BPMNEdge_flow12">
+        <omgdi:waypoint x="1211.0" y="220.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1351.0" y="220.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1350.0" y="295.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="54.0" width="100.0" x="1268.0" y="160.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13">
+        <omgdi:waypoint x="1201.0" y="415.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1351.0" y="415.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1350.0" y="350.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="54.0" width="100.0" x="1267.0" y="431.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow14" id="BPMNEdge_flow14">
+        <omgdi:waypoint x="1411.0" y="322.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1520.0" y="322.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow15" id="BPMNEdge_flow15">
+        <omgdi:waypoint x="761.0" y="320.0"></omgdi:waypoint>
+        <omgdi:waypoint x="910.0" y="319.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow16" id="BPMNEdge_flow16">
+        <omgdi:waypoint x="755.0" y="136.0"></omgdi:waypoint>
+        <omgdi:waypoint x="874.0" y="136.0"></omgdi:waypoint>
+        <omgdi:waypoint x="900.0" y="216.0"></omgdi:waypoint>
+        <omgdi:waypoint x="930.0" y="299.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow17" id="BPMNEdge_flow17">
+        <omgdi:waypoint x="930.0" y="299.0"></omgdi:waypoint>
+        <omgdi:waypoint x="930.0" y="220.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1050.0" y="220.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.0" width="36.0" x="941.0" y="191.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
+        <omgdi:waypoint x="930.0" y="339.0"></omgdi:waypoint>
+        <omgdi:waypoint x="930.0" y="415.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1040.0" y="415.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.0" width="68.0" x="930.0" y="430.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

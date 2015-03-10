@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/bpmn20">
+  <process id="RuleDemoProcess" name="Rule Demo Process" isExecutable="true">
+    <startEvent id="planStatusStartEvent1" name="Start"></startEvent>
+    <endEvent id="planStatusEndEvent1" name="End"></endEvent>
+    <serviceTask id="ruleDemoServiceTask" name="Invoke plan status rules" activiti:class="com.learning.activiti.task.PlanStatusTask"></serviceTask>
+    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
+    <serviceTask id="planStatusMailTask1" name="Open Status Task" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Plan status update]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:expression>&lt;html&gt;
+       &lt;body&gt;
+                  Hello ,&lt;br/&gt;&lt;br/&gt;
+
+                  The following loan account plan status has been updated. &lt;br/&gt;&lt;br/&gt;
+
+                  Customer account details:
+                  &lt;hr&gt;
+    		   Account Number: ${planStatus.accountNumber} &lt;br/&gt;
+                  Final Action: ${planStatus.action}  &lt;br/&gt;
+                  Input Status: ${planStatus.status} &lt;br/&gt;&lt;br/&gt;
+
+                  Kind regards,&lt;br/&gt;
+
+                  The Loan Company.
+       &lt;/body&gt;
+&lt;/html&gt;</activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="planStatusMailTask2" name="Pending Status Task" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Plan status update]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:expression>&lt;html&gt;
+       &lt;body&gt;
+                  Hello ,&lt;br/&gt;&lt;br/&gt;
+
+                  The following loan account plan status has been updated. &lt;br/&gt;&lt;br/&gt;
+
+                  Customer account details:
+                  &lt;hr&gt;
+    		      Account Number: ${planStatus.accountNumber} &lt;br/&gt;
+                  Final Action: ${planStatus.action}  &lt;br/&gt;
+                  Input Status: ${planStatus.status} &lt;br/&gt;&lt;br/&gt;
+
+                  Kind regards,&lt;br/&gt;
+
+                  The Loan Company.
+       &lt;/body&gt;
+&lt;/html&gt;</activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <serviceTask id="planStatusMailTask3" name="Terminated Status Task" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Plan status update]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:expression>&lt;html&gt;
+       &lt;body&gt;
+                  Hello ,&lt;br/&gt;&lt;br/&gt;
+
+                  The following loan account plan status has been updated. &lt;br/&gt;&lt;br/&gt;
+
+                  Customer account details:
+                  &lt;hr&gt;
+    		      Account Number: ${planStatus.accountNumber} &lt;br/&gt;
+                  Final Action: ${planStatus.action}  &lt;br/&gt;
+                  Input Status: ${planStatus.status} &lt;br/&gt;&lt;br/&gt;
+
+                  Kind regards,&lt;br/&gt;
+
+                  The Loan Company.
+       &lt;/body&gt;
+&lt;/html&gt;</activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <sequenceFlow id="planStatusFlow1" sourceRef="planStatusStartEvent1" targetRef="ruleDemoServiceTask"></sequenceFlow>
+    <sequenceFlow id="planStatusFlow2" sourceRef="ruleDemoServiceTask" targetRef="exclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="planStatusFlow3" name="${status == O}" sourceRef="exclusivegateway1" targetRef="planStatusMailTask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${planStatus.status == "O"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="planStatusFlow4" name="${status == T}" sourceRef="exclusivegateway1" targetRef="planStatusMailTask3">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${planStatus.status == "T"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="planStatusFlow5" name="${status == P}" sourceRef="exclusivegateway1" targetRef="planStatusMailTask2">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${planStatus.status == "P"}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="planStatusFlow6" sourceRef="planStatusMailTask1" targetRef="planStatusEndEvent1"></sequenceFlow>
+    <sequenceFlow id="planStatusFlow7" sourceRef="planStatusMailTask2" targetRef="planStatusEndEvent1"></sequenceFlow>
+    <sequenceFlow id="planStatusFlow8" sourceRef="planStatusMailTask3" targetRef="planStatusEndEvent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_RuleDemoProcess">
+    <bpmndi:BPMNPlane bpmnElement="RuleDemoProcess" id="BPMNPlane_RuleDemoProcess">
+      <bpmndi:BPMNShape bpmnElement="planStatusStartEvent1" id="BPMNShape_planStatusStartEvent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="120.0" y="210.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="planStatusEndEvent1" id="BPMNShape_planStatusEndEvent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1070.0" y="210.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="ruleDemoServiceTask" id="BPMNShape_ruleDemoServiceTask">
+        <omgdc:Bounds height="71.0" width="141.0" x="290.0" y="192.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="590.0" y="207.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="planStatusMailTask1" id="BPMNShape_planStatusMailTask1">
+        <omgdc:Bounds height="71.0" width="151.0" x="780.0" y="70.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="planStatusMailTask2" id="BPMNShape_planStatusMailTask2">
+        <omgdc:Bounds height="71.0" width="151.0" x="780.0" y="192.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="planStatusMailTask3" id="BPMNShape_planStatusMailTask3">
+        <omgdc:Bounds height="71.0" width="151.0" x="780.0" y="310.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow1" id="BPMNEdge_planStatusFlow1">
+        <omgdi:waypoint x="155.0" y="227.0"></omgdi:waypoint>
+        <omgdi:waypoint x="290.0" y="227.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow2" id="BPMNEdge_planStatusFlow2">
+        <omgdi:waypoint x="431.0" y="227.0"></omgdi:waypoint>
+        <omgdi:waypoint x="590.0" y="227.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow3" id="BPMNEdge_planStatusFlow3">
+        <omgdi:waypoint x="610.0" y="207.0"></omgdi:waypoint>
+        <omgdi:waypoint x="610.0" y="107.0"></omgdi:waypoint>
+        <omgdi:waypoint x="780.0" y="105.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="54.0" width="100.0" x="630.0" y="54.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow4" id="BPMNEdge_planStatusFlow4">
+        <omgdi:waypoint x="610.0" y="247.0"></omgdi:waypoint>
+        <omgdi:waypoint x="610.0" y="347.0"></omgdi:waypoint>
+        <omgdi:waypoint x="780.0" y="345.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="18.0" width="100.0" x="640.0" y="309.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow5" id="BPMNEdge_planStatusFlow5">
+        <omgdi:waypoint x="630.0" y="227.0"></omgdi:waypoint>
+        <omgdi:waypoint x="780.0" y="227.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="54.0" width="100.0" x="629.0" y="174.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow6" id="BPMNEdge_planStatusFlow6">
+        <omgdi:waypoint x="931.0" y="105.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1037.0" y="107.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1087.0" y="210.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow7" id="BPMNEdge_planStatusFlow7">
+        <omgdi:waypoint x="931.0" y="227.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1070.0" y="227.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="planStatusFlow8" id="BPMNEdge_planStatusFlow8">
+        <omgdi:waypoint x="931.0" y="345.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1037.0" y="347.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1087.0" y="245.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

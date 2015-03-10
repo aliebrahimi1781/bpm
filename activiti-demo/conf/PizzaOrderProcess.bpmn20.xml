@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/bpmn20">
+  <process id="PizzaOrderProcessNew" name="Pizza Order Process" isExecutable="true">
+    <startEvent id="pizzaStartEvent1" name="Start"></startEvent>
+    <serviceTask id="pizzaservicetask1" name="Calculate Price" activiti:class="com.learning.activiti.task.PizzaPriceTask"></serviceTask>
+    <userTask id="pizzausertask1" name="Bake the pizza's" activiti:assignee="fozzie"
+              activiti:candidateGroups="accountancy">
+    </userTask>
+    <endEvent id="pizzaendevent1" name="End"></endEvent>
+    <sequenceFlow id="pizzaflow3" name="validOrder == false" sourceRef="pizzaexclusivegateway2" targetRef="pizzaendevent1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${pizzaOrderObj.validOrder == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="pizzaflow4" name="validOrder == true" sourceRef="pizzaexclusivegateway2" targetRef="pizzaservicetask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${pizzaOrderObj.validOrder == true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="pizzaflow5" sourceRef="pizzaservicetask1" targetRef="pizzausertask1"></sequenceFlow>
+    <sequenceFlow id="pizzaflow7" sourceRef="pizzamailtask2" targetRef="pizzaendevent1"></sequenceFlow>
+    <serviceTask id="pizzaservicetask8" name="Validate pizza order" activiti:class="com.learning.activiti.task.PizzaOrderTask"></serviceTask>
+    <sequenceFlow id="pizzaflow8" sourceRef="pizzaStartEvent1" targetRef="pizzaservicetask8"></sequenceFlow>
+    <sequenceFlow id="pizzaflow9" sourceRef="pizzaservicetask8" targetRef="pizzaexclusivegateway2"></sequenceFlow>
+    <serviceTask id="pizzamailtask2" name="Send Pizza Order" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[Send pizza order]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:expression>&lt;html&gt;
+       &lt;body&gt;
+                  Hello, &lt;br/&gt;&lt;br/&gt;
+
+                  Your pizza order request has been completed.  The complete order details are provided below: &lt;br/&gt;&lt;br/&gt;
+
+                  Pizza order data:
+                  &lt;hr&gt;
+                  Pizza Name: ${pizzaOrderDVO.pizzaName}  &lt;br/&gt;
+                  Quantiry: ${pizzaOrderDVO.quantity} &lt;br/&gt;
+                  Total Price: ${pizzaOrderDVO.totalPrice } &lt;br/&gt;
+                  Address: ${pizzaOrderDVO.address } &lt;br/&gt;
+                  Backing Status: ${ pizzaOrderDVO.backingStatus}   &lt;br/&gt;      &lt;br/&gt;
+
+                  Kind regards,&lt;br/&gt;
+
+                  The Pizza Company.
+       &lt;/body&gt;
+&lt;/html&gt;
+</activiti:expression>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <exclusiveGateway id="pizzaexclusivegateway2" name="Parallel Gateway"></exclusiveGateway>
+    <sequenceFlow id="pizzwflow1" sourceRef="pizzausertask1" targetRef="pizzamailtask2"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_PizzaOrderProcessNew">
+    <bpmndi:BPMNPlane bpmnElement="PizzaOrderProcessNew" id="BPMNPlane_PizzaOrderProcessNew">
+      <bpmndi:BPMNShape bpmnElement="pizzaStartEvent1" id="BPMNShape_pizzaStartEvent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="248.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pizzaservicetask1" id="BPMNShape_pizzaservicetask1">
+        <omgdc:Bounds height="75.0" width="171.0" x="572.0" y="228.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pizzausertask1" id="BPMNShape_pizzausertask1">
+        <omgdc:Bounds height="75.0" width="131.0" x="830.0" y="228.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pizzaendevent1" id="BPMNShape_pizzaendevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1140.0" y="40.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pizzaservicetask8" id="BPMNShape_pizzaservicetask8">
+        <omgdc:Bounds height="73.0" width="131.0" x="190.0" y="229.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pizzamailtask2" id="BPMNShape_pizzamailtask2">
+        <omgdc:Bounds height="71.0" width="121.0" x="1097.0" y="230.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="pizzaexclusivegateway2" id="BPMNShape_pizzaexclusivegateway2">
+        <omgdc:Bounds height="40.0" width="40.0" x="430.0" y="245.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="pizzaflow3" id="BPMNEdge_pizzaflow3">
+        <omgdi:waypoint x="450.0" y="245.0"></omgdi:waypoint>
+        <omgdi:waypoint x="450.0" y="56.0"></omgdi:waypoint>
+        <omgdi:waypoint x="860.0" y="56.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1140.0" y="57.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="54.0" width="100.0" x="460.0" y="126.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="pizzaflow4" id="BPMNEdge_pizzaflow4">
+        <omgdi:waypoint x="470.0" y="265.0"></omgdi:waypoint>
+        <omgdi:waypoint x="572.0" y="265.0"></omgdi:waypoint>
+        <bpmndi:BPMNLabel>
+          <omgdc:Bounds height="54.0" width="100.0" x="449.0" y="285.0"></omgdc:Bounds>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="pizzaflow5" id="BPMNEdge_pizzaflow5">
+        <omgdi:waypoint x="743.0" y="265.0"></omgdi:waypoint>
+        <omgdi:waypoint x="830.0" y="265.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="pizzaflow7" id="BPMNEdge_pizzaflow7">
+        <omgdi:waypoint x="1157.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1157.0" y="75.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="pizzaflow8" id="BPMNEdge_pizzaflow8">
+        <omgdi:waypoint x="95.0" y="265.0"></omgdi:waypoint>
+        <omgdi:waypoint x="190.0" y="265.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="pizzaflow9" id="BPMNEdge_pizzaflow9">
+        <omgdi:waypoint x="321.0" y="265.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="265.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="pizzwflow1" id="BPMNEdge_pizzwflow1">
+        <omgdi:waypoint x="961.0" y="265.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1097.0" y="265.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

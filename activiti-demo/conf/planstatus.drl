@@ -1,0 +1,48 @@
+package  com.learning.activiti.rules;
+
+import  com.learning.activiti.rules.Status;
+
+rule "BenefitStatus_1"
+	salience 100
+	when
+		Status(status == "P")
+		$status : Status()
+	then
+		$status.setAction("POST_AND_SUSPEND_PLAN");
+end
+
+rule "BenefitStatus_2"
+	salience 90
+	when
+		Status(status == "D")
+		$status : Status()
+	then
+		$status.setAction("DENIED_PLAN");
+end
+
+rule "BenefitStatus_3"
+	salience 80
+	when
+		Status(status == "A")
+		$status : Status()
+	then
+		$status.setAction("ACIVATE_PLAN");
+end
+
+rule "BenefitStatus_4"
+	salience 70
+	when
+		Status(status == "T")
+		$status : Status()
+	then
+		$status.setAction("TERMNATE_PLAN");
+end
+
+rule "BenefitStatus_5"
+	salience 60
+	when
+		Status(status == "O")
+		$status : Status()
+	then
+		$status.setAction("POST_PLAN");
+end

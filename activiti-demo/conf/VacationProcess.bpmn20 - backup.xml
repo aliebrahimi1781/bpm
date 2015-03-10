@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/bpmn20">
+  <process id="VecationProcess" name="Vecation Process" isExecutable="true">
+    <startEvent id="ptostartevent1" name="Start"></startEvent>
+    <userTask id="ptousertask1" name="Handle vacation request" activiti:candidateGroups="accountancy">
+      <extensionElements>
+        <activiti:formProperty id="employeeName" name="Employee Name" type="string"></activiti:formProperty>
+        <activiti:formProperty id="numberOfDays" name="Number Of Days" type="long" default="1"></activiti:formProperty>
+        <activiti:formProperty id="startDate" name="First day of holiday (dd-MM-yyyy)" type="string" required="true"></activiti:formProperty>
+        <activiti:formProperty id="vacationMotivation" name="Motivation" type="string"></activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <userTask id="ptousertask2" name="Adjust vacation request" activiti:candidateGroups="management">
+      <extensionElements>
+        <activiti:formProperty id="managerMotivation" name="Motivation" type="string"></activiti:formProperty>
+        <activiti:formProperty id="vacationApproved" name="Do you approve this vacation" type="enum" required="true">
+          <activiti:value id="true" name="true"></activiti:value>
+          <activiti:value id="false" name="false"></activiti:value>
+        </activiti:formProperty>
+      </extensionElements>
+    </userTask>
+    <serviceTask id="ptomailtask1" name="Send confirmation email" activiti:type="mail">
+      <extensionElements>
+        <activiti:field name="to">
+          <activiti:string><![CDATA[miss.piggy@localhost]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="html">
+          <activiti:string><![CDATA[<html>
+       <body>
+
+              PTO Approved Mail
+
+       </body>
+</html>]]></activiti:string>
+        </activiti:field>
+        <activiti:field name="subject">
+          <activiti:string><![CDATA[PTO Request]]></activiti:string>
+        </activiti:field>
+      </extensionElements>
+    </serviceTask>
+    <endEvent id="ptoendevent1" name="End"></endEvent>
+    <sequenceFlow id="ptoflow1" sourceRef="ptostartevent1" targetRef="ptousertask1"></sequenceFlow>
+    <sequenceFlow id="ptoflow5" sourceRef="ptomailtask1" targetRef="ptoendevent1"></sequenceFlow>
+    <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="ptoflow6" sourceRef="ptousertask2" targetRef="exclusivegateway1"></sequenceFlow>
+    <sequenceFlow id="ptoflow2" sourceRef="exclusivegateway1" targetRef="ptousertask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vacationApproved == false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="ptoflow3" sourceRef="exclusivegateway1" targetRef="ptomailtask1">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${vacationApproved == true}]]></conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="servicetask1" name="Aggregate Data" activiti:class="com.learning.activiti.task.VacationTask"></serviceTask>
+    <sequenceFlow id="ptoflow7" sourceRef="ptousertask1" targetRef="servicetask1"></sequenceFlow>
+    <sequenceFlow id="ptoflow8" sourceRef="servicetask1" targetRef="ptousertask2"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_VecationProcess">
+    <bpmndi:BPMNPlane bpmnElement="VecationProcess" id="BPMNPlane_VecationProcess">
+      <bpmndi:BPMNShape bpmnElement="ptostartevent1" id="BPMNShape_ptostartevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="213.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="ptousertask1" id="BPMNShape_ptousertask1">
+        <omgdc:Bounds height="71.0" width="171.0" x="180.0" y="195.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="ptousertask2" id="BPMNShape_ptousertask2">
+        <omgdc:Bounds height="65.0" width="201.0" x="610.0" y="199.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="ptomailtask1" id="BPMNShape_ptomailtask1">
+        <omgdc:Bounds height="55.0" width="201.0" x="1019.0" y="203.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="ptoendevent1" id="BPMNShape_ptoendevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="1290.0" y="214.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
+        <omgdc:Bounds height="40.0" width="40.0" x="870.0" y="210.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="servicetask1" id="BPMNShape_servicetask1">
+        <omgdc:Bounds height="63.0" width="105.0" x="430.0" y="199.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="ptoflow1" id="BPMNEdge_ptoflow1">
+        <omgdi:waypoint x="95.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="180.0" y="230.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ptoflow5" id="BPMNEdge_ptoflow5">
+        <omgdi:waypoint x="1220.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1290.0" y="231.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ptoflow6" id="BPMNEdge_ptoflow6">
+        <omgdi:waypoint x="811.0" y="231.0"></omgdi:waypoint>
+        <omgdi:waypoint x="870.0" y="230.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ptoflow2" id="BPMNEdge_ptoflow2">
+        <omgdi:waypoint x="890.0" y="210.0"></omgdi:waypoint>
+        <omgdi:waypoint x="889.0" y="65.0"></omgdi:waypoint>
+        <omgdi:waypoint x="296.0" y="65.0"></omgdi:waypoint>
+        <omgdi:waypoint x="265.0" y="195.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ptoflow3" id="BPMNEdge_ptoflow3">
+        <omgdi:waypoint x="910.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1019.0" y="230.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ptoflow7" id="BPMNEdge_ptoflow7">
+        <omgdi:waypoint x="351.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="430.0" y="230.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ptoflow8" id="BPMNEdge_ptoflow8">
+        <omgdi:waypoint x="535.0" y="230.0"></omgdi:waypoint>
+        <omgdi:waypoint x="610.0" y="231.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>
